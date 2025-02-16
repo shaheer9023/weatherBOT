@@ -1,65 +1,116 @@
 import streamlit as st
 from meta_ai_api import MetaAI
-from datetime import datetime
-import pytz
 
-def get_weather(place):
-    llm = MetaAI()
-    # Get Pakistan time
-    pk_timezone = pytz.timezone('Asia/Karachi')
-    current_time = datetime.now(pk_timezone).strftime('%I:%M %p, %d %B %Y')
-    
-    instruction = f'''
-    you are a custom weather bot. You need to provide the weather information of given place 
-    in proper format.
-    - Format the response beautifully with emojis
-    - Include temperature, humidity, and general weather conditions
-    - Do not include any HTML tags in your response
-    - Just provide clean text with emojis
-    - Current Pakistan Time: {current_time}
-    - the given place is {place}
-    if user input something else then you have to tell us that you are weather bot and you can only provide weather information
-    '''
-    response = llm.prompt(instruction)
-    return response["message"]
+# Page configuration
+st.set_page_config(
+    page_title="Weather Bot",
+    page_icon="🌤️",
+    layout="centered"
+)
+
+# Custom CSS
+st.markdown("""
+    <style>
+    .main {
+        padding: 2rem;
+    }
+    .stTitle {
+        color: #1E88E5;
+        font-size: 3rem !important;
+        padding-bottom: 2rem;
+        text-align: center;
+    }
+    .stTextInput > label {
+        font-size: 1.2rem;
+        color: #424242;
+        font-weight: 500;
+    }
+    .stTextInput > div > div > input {
+        border-radius: 10px;
+        padding: 1rem;
+        font-size: 1.1rem;
+    }
+    .stButton > button {
+        width: 100%;
+        border-radius: 10px;
+        background-color: #1E88E5;
+        color: white;
+        font-size: 1.1rem;
+        padding: 0.5rem 1rem;
+        margin-top: 1rem;
+    }
+    .weather-box {
+        padding: 25px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+        margin: 20px 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        font-size: 1.1rem;
+        line-height: 2;
+    }
+    .description {
+        text-align: center;
+        color: #616161;
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+    }
+    .stSpinner > div {
+        text-align: center;
+        color: #1E88E5;
+    }
+    .stWarning {
+        padding: 1rem;
+        border-radius: 10px;
+        font-size: 1.1rem;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 def main():
-    st.set_page_config(page_title="Weather Bot", page_icon="🌤️")
+    st.title("Weather Information Bot")
+    st.markdown('<p class="description">Get instant weather updates for any location worldwide! 🌍</p>', unsafe_allow_html=True)
     
-    # Custom CSS for lighter background
-    st.markdown("""
-        <style>
-        .weather-container {
-            background-color: #F7FBFF;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #E1F0FF;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    # Create two columns for layout
+    col1, col2 = st.columns([3, 1])
     
-    # Header styling
-    st.markdown("""
-        <h1 style='text-align: center; color: #2E86C1;'>☀️ Weather Information Bot 🌦️</h1>
-    """, unsafe_allow_html=True)
+    with col1:
+        # Initialize MetaAI
+        llm = MetaAI()
+        
+        # Create input field
+        place = st.text_input("Enter the place (i.e city with country):")
     
-    # Input section
-    place = st.text_input("Enter the place (i.e city with country):", placeholder="e.g., Lahore, Pakistan")
+    with col2:
+        st.write("")
+        st.write("")
+        search_button = st.button("🔍 Search")
     
-    if st.button("Get Weather 🔍"):
+    if search_button:
         if place:
+            instruction = f'''
+            You are a weather information bot. Provide weather information for {place} in the following format:
+            
+            🌍 Location: [city, country]
+            🌡️ Temperature: [temperature in °C]
+            💨 Wind: [wind speed and direction]
+            💧 Humidity: [humidity percentage]
+            ☁️ Weather Condition: [current weather condition]
+            🌅 Sunrise: [sunrise time]
+            🌇 Sunset: [sunset time]
+            
+            Provide only these details in this exact format with emojis. If location is invalid, politely mention that you can only provide weather information for valid locations.
+            '''
+            
             with st.spinner("Fetching weather information..."):
-                weather_info = get_weather(place)
-                st.markdown("<div class='weather-container'>", unsafe_allow_html=True)
-                st.write(weather_info)
-                st.markdown("</div>", unsafe_allow_html=True)
+                response = llm.prompt(instruction)
+                st.markdown(f'<div class="weather-box">{response["message"]}</div>', unsafe_allow_html=True)
         else:
-            st.warning("Please enter a place name!")
-    
+            st.warning("⚠️ Please enter a place name")
+
     # Footer
     st.markdown("""
-        <div style='position: fixed; bottom: 0; width: 100%; text-align: center; padding: 10px; background-color: #F8F9F9;'>
-            <p style='color: #566573;'>Made with ❤️ by Shaheer Ahmad</p>
+        <div style='position: fixed; bottom: 0; left: 0; width: 100%; background-color: #f0f2f6; padding: 10px; text-align: center;'>
+            <p style='color: #616161; margin: 0;'>Made with ❤️ by Shaheer Ahmad</p>
         </div>
     """, unsafe_allow_html=True)
 

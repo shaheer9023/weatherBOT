@@ -26,3 +26,7 @@ websockets==10.4
 zipp==3.21.0
 streamlit
 pytz
+requests
+google-generativeai
+timezonefinder
+geopy
