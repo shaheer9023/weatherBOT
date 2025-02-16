@@ -1,0 +1,3 @@
+streamlit==1.24.0
+meta-ai-api
+protobuf==3.20.0
